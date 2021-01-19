@@ -9,7 +9,7 @@
   "author": "Anthony Loredo",
   "license": "MIT",
   "dependencies": {
-    "inquirer": "^6.3.1"
+    "inquirer": "^6.5.2"
   },
   "repository": {
     "type": "git",
