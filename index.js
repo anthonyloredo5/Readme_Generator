@@ -1,12 +1,12 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
 const util = require('util');
+//prompts.override(require('yargs').argv);
 
 const writeFileAsync = util.promisify(fs.writeFile);
 
 const promptUser = () =>
   inquirer.prompt([
-      
     {
       type: 'input',
       name: 'title',
@@ -22,21 +22,21 @@ const promptUser = () =>
       name: 'usage',
       message: 'How is the application used?',
     },
-    {//muilti select not workling
-      type: 'multiselect',
-      name: 'license',
-      message: 'Choose a license',
-      choices: [
-        { title: 'MIT',  value: 'MIT' },
-        { title: 'X11', value: 'X11' },
-        { title: 'Expat', value: 'Expat' }
-      ],
-      initial: 1
-    },
     {
       type: 'input',
       name: 'contributing',
-      message: 'Contributor information or Contribution guidlines',
+      message: 'Contributor information or Contribution guidelines',
+    },
+    {
+      type: 'list',
+      name: 'license',
+      message: 'Choose a license',
+      choices: [
+        'MIT',
+        'Apache',
+        'Eclipse',
+        'Mozilla',
+      ],
     },
     {
       type: 'input',
@@ -45,41 +45,78 @@ const promptUser = () =>
     },
     {
       type: 'input',
-      name: 'questions',
+      name: 'linkedin',
       message: 'Enter your LinkedIn URL.',
     },
+
   ]);
 
-const generateREADME = (answers) =>
-`# ${answers.title} Repository !!
+function pickLicenseUrl(answer) {
 
-## Description 
-${answers.description}
+  switch (answer.license) {
+    case 'MIT':
+      answer.license = "MIT: [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)"
+      break;
+    case 'Apache':
+      answer.license = "Apache: [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)"
+      break;
+    case "Eclipse":
+      answer.license = "Eclipse: [![License](https://img.shields.io/badge/License-EPL%201.0-red.svg)](https://opensource.org/licenses/EPL-1.0)"
+      break;
+    case "Mozilla":
+      answer.license = "Mozilla: [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)"
+      break;
+    default:
+      console.log("Not listed");
+  }
+}
 
-## Table of Contents 
-${answers.TOC}
+const generateREADME = (answers) => {
+  var backTicks = "```";
+  var readme = `# ${answers.title} !! ${answers.license}
 
-## Installation 
-${answers.installation}
+## Description
+${backTicks}
+  Usage: ${answers.usage}
 
-## Usage
-${answers.usage}
+  Installation: ${answers.installdirections}
+${backTicks}
 
-## License
-${answers.license}
+# Table of Contents 
+${backTicks}
 
-## Contributing
-${answers.contributing}
+${backTicks}
 
-## Tests
-${answers.tests}
+## Contributing/Contribution Guidelines 
+${backTicks}
+  ${answers.contributing}
+${backTicks}
 
-## Questions
-${answers.questions}
-`;
+## Tests 
+${backTicks}
+  ${answers.tests}
+${backTicks}
+
+## My linkedIn URL 
+${backTicks}
+  ${answers.linkedin}
+${backTicks}
+`
+  return readme;
+}
 
 
 promptUser()
-  .then((answers) => writeFileAsync(`${answers.title}.md`, generateREADME(answers)))
-  .then(() => console.log('Successfully wrote your README.md'))
+  .then((answers) => {
+    console.log('Answers from pormpt!!', answers)
+    pickLicenseUrl(answers)
+
+    console.log('Answers after pick lisence function!!', answers)
+
+    writeFileAsync(`${answers.title}.md`, generateREADME(answers))
+  })
+  .then(() => {
+
+    console.log('Successfully wrote your README.md')
+  })
   .catch((err) => console.error(err));
